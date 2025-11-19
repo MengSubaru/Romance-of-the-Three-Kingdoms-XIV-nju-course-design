@@ -460,7 +460,6 @@ class CityInfoWindow(QWidget):
         my_faction = city.owner
         return any(nb.owner != my_faction for nb in city.neighbors)
 
-    # ---------- 各项操作 ----------
     def refresh(self):
         self.info_label.setText(self._city_info())
 
@@ -532,6 +531,7 @@ class CityInfoWindow(QWidget):
             self.parent_window.update_turn_info()
             self.update_buttons_state()
 
+
     def on_transfer_general(self):
         """调遣武将功能"""
         if not self.check_and_consume_action():
@@ -548,17 +548,25 @@ class CityInfoWindow(QWidget):
 
         dlg = GeneralTransferDialog(self.city, self.parent_window.world_cities, parent=self)
         if dlg.exec() == QDialog.Accepted:
-            general, target_city = dlg.get_result()
+            generals, target_city = dlg.get_result()
             
-            if general and target_city:
-                # 从当前城市移除武将
-                self.city.remove_general(general)
-                # 添加到目标城市
-                target_city.generals.append(general)
+            if generals and target_city:
+                # 从当前城市移除选中的武将
+                for general in generals:
+                    self.city.remove_general(general)
+                    # 添加到目标城市
+                    target_city.generals.append(general)
                 
-                self.log_label.setText(f"调遣 {general.name} 到 {target_city.name}")
+                general_names = "、".join([g.name for g in generals])
+                self.log_label.setText(f"调遣 {len(generals)} 名武将到 {target_city.name}：{general_names}")
                 self.refresh()
                 self.world_update()
+            else:
+                QMessageBox.warning(self, "提示", "请选择要调遣的武将和目标城市")
+                # 返还操作次数
+                self.parent_window.actions_remaining += 1
+                self.parent_window.update_turn_info()
+                self.update_buttons_state()
         else:
             # 用户取消，返还操作次数
             self.parent_window.actions_remaining += 1
@@ -1069,13 +1077,14 @@ class TransferDialog(QDialog):
         # target choice
         mainwin = self.parent().parent()
         self.dest_combo = QComboBox()
+         # 直接在下拉框中存储城市对象
         cities = [
             c for c in mainwin.world_cities
             if c != origin_city and c.owner == origin_city.owner
         ]
 
         for c in cities:
-            self.dest_combo.addItem(c.name)
+            self.dest_combo.addItem(c.name, c)  # 第二个参数是关联的数据
         layout.addRow("目标城市", self.dest_combo)
 
         self.food_spin = QSpinBox(); self.food_spin.setRange(0, origin_city.food)
@@ -1090,9 +1099,11 @@ class TransferDialog(QDialog):
         self.setLayout(layout)
 
     def get_result(self):
-        mainwin = self.parent().parent()
-        dest = mainwin.world_cities[self.dest_combo.currentIndex()]
-        return dest, self.food_spin.value(), self.gold_spin.value()
+        # 直接从下拉框获取关联的城市对象
+        dest = self.dest_combo.currentData()
+        if dest:
+            return dest, self.food_spin.value(), self.gold_spin.value()
+        return None, 0, 0
 
 class ArmySelectDialog(QDialog):
     def __init__(self, armies, parent=None, single_mode=False):
@@ -1250,43 +1261,90 @@ class FoodTradeDialog(QDialog):
         return trade_type, self.amount_spin.value()
 
 class GeneralTransferDialog(QDialog):
-    """武将调遣对话框"""
+    """武将调遣对话框 - 支持多选"""
     def __init__(self, current_city: City, all_cities: list[City], parent=None):
         super().__init__(parent)
         self.current_city = current_city
         self.all_cities = [c for c in all_cities if c != current_city and c.owner == current_city.owner]
         
         self.setWindowTitle("调遣武将")
-        self.resize(400, 300)
+        self.resize(500, 400)
         
         layout = QVBoxLayout(self)
         
-        # 武将选择
-        layout.addWidget(QLabel("选择要调遣的武将:"))
-        self.general_combo = QComboBox()
+        # 武将选择（多选）
+        layout.addWidget(QLabel("选择要调遣的武将（可多选）:"))
+        self.general_list = QListWidget()
+        self.general_list.setSelectionMode(QListWidget.MultiSelection)  # 设置为多选模式
+        
         for general in current_city.generals:
-            self.general_combo.addItem(f"{general.name} (统率:{general.leadership} 兵力:{general.army})", general)
-        layout.addWidget(self.general_combo)
+            item = QListWidgetItem(f"{general.name} (统率:{general.leadership} 武力:{general.martial} 兵力:{general.army})")
+            item.setData(Qt.UserRole, general)
+            self.general_list.addItem(item)
+        
+        layout.addWidget(self.general_list)
         
         # 目标城市选择
         layout.addWidget(QLabel("选择目标城市:"))
         self.city_combo = QComboBox()
         for city in self.all_cities:
             generals_count = len(city.generals)
-            self.city_combo.addItem(f"{city.name} (武将:{generals_count})", city)
+            self.city_combo.addItem(f"{city.name} (现有武将:{generals_count})", city)
         layout.addWidget(self.city_combo)
+        
+        # 信息显示
+        self.info_label = QLabel("请选择要调遣的武将和目标城市")
+        self.info_label.setStyleSheet("color: blue;")
+        layout.addWidget(self.info_label)
+        
+        # 连接信号，实时更新信息
+        self.general_list.itemSelectionChanged.connect(self.update_info)
+        self.city_combo.currentIndexChanged.connect(self.update_info)
         
         # 按钮
         buttons = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel)
         buttons.accepted.connect(self.accept)
         buttons.rejected.connect(self.reject)
         layout.addWidget(buttons)
+        
+        self.update_info()
+    
+    def update_info(self):
+        """更新调遣信息显示"""
+        selected_generals = self.get_selected_generals()
+        target_city = self.city_combo.currentData()
+        
+        if not selected_generals:
+            self.info_label.setText("请选择要调遣的武将")
+            return
+        
+        if not target_city:
+            self.info_label.setText("请选择目标城市")
+            return
+        
+        general_names = "、".join([g.name for g in selected_generals])
+        total_army = sum(g.army for g in selected_generals)
+        
+        self.info_label.setText(
+            f"准备调遣 {len(selected_generals)} 名武将到 {target_city.name}：\n"
+            f"{general_names}\n"
+            f"总兵力：{total_army} 人"
+        )
+    
+    def get_selected_generals(self):
+        """获取选中的武将列表"""
+        selected_generals = []
+        for item in self.general_list.selectedItems():
+            general = item.data(Qt.UserRole)
+            if general:
+                selected_generals.append(general)
+        return selected_generals
     
     def get_result(self):
-        """返回选择的武将和目标城市"""
-        general = self.general_combo.currentData()
+        """返回选择的武将列表和目标城市"""
+        selected_generals = self.get_selected_generals()
         target_city = self.city_combo.currentData()
-        return general, target_city
+        return selected_generals, target_city     
 
 class HoverImageWindow(QDialog):
     """ 悬停时出现的小头像窗口（无边框） """
@@ -2003,7 +2061,7 @@ class MainWindow(QMainWindow):
         return changed
     
     def execute_computer_transfer_generals(self, faction: Faction, actions_remaining):
-        """电脑调遣武将逻辑"""
+        """电脑调遣武将逻辑 - 优化版"""
         # 找出需要增援的城市（边境城市或兵力不足的城市）
         reinforcement_needed = []
         
@@ -2035,41 +2093,60 @@ class MainWindow(QMainWindow):
             
             # 如果是内陆城市且兵力充足，可以作为捐赠城市
             if is_inland and total_army > 1500 and len(city.generals) > 1:
-                donor_cities.append(city)
+                donor_cities.append((city, total_army))
         
         if not donor_cities:
             return actions_remaining
         
-        # 为需要增援的城市调遣武将
-        for target_city, _ in reinforcement_needed:
+        # 按兵力富余程度排序
+        donor_cities.sort(key=lambda x: x[1], reverse=True)
+        
+        # 为需要增援的城市调遣武将（一次可以调遣多名）
+        for target_city, target_army in reinforcement_needed:
             if actions_remaining <= 0:
                 break
                 
+            # 计算需要的增援兵力
+            needed_army = 2000 - target_army
+            
             # 从捐赠城市选择武将调遣
-            for donor_city in donor_cities:
+            for donor_city, donor_army in donor_cities:
                 if actions_remaining <= 0:
                     break
                     
-                # 选择兵力较多但不是最强的武将调遣（保留一些防守力量）
-                if len(donor_city.generals) > 1:
-                    # 按兵力排序，选择中间力量的武将
-                    sorted_generals = sorted(donor_city.generals, key=lambda g: g.army)
-                    if len(sorted_generals) >= 3:
-                        transfer_general = sorted_generals[1]  # 选择兵力第二的
-                    else:
-                        transfer_general = sorted_generals[0]  # 选择兵力最少的
+                if donor_army <= 1000:  # 捐赠城市兵力不足
+                    continue
                     
+                # 选择要调遣的武将（选择兵力适中的，避免调走主力）
+                available_generals = [g for g in donor_city.generals if g.army > 0]
+                if len(available_generals) <= 1:  # 至少要保留1名武将
+                    continue
+                    
+                # 按兵力排序，选择中间力量的武将（不调最强的，也不调最弱的）
+                sorted_generals = sorted(available_generals, key=lambda g: g.army)
+                transfer_candidates = []
+                
+                # 尝试选择1-3名武将进行调遣
+                if len(sorted_generals) >= 4:
+                    transfer_candidates = sorted_generals[1:3]  # 选择第2、3名
+                elif len(sorted_generals) >= 3:
+                    transfer_candidates = [sorted_generals[1]]  # 选择第2名
+                else:
+                    transfer_candidates = [sorted_generals[0]]  # 选择最弱的
+                
+                if transfer_candidates:
                     # 执行调遣
-                    donor_city.remove_general(transfer_general)
-                    target_city.generals.append(transfer_general)
+                    for general in transfer_candidates:
+                        donor_city.remove_general(general)
+                        target_city.generals.append(general)
                     
-                    self.log_list.addItem(f"{faction.name}势力从{donor_city.name}调遣{transfer_general.name}到{target_city.name}")
+                    general_names = "、".join([g.name for g in transfer_candidates])
+                    self.log_list.addItem(f"{faction.name}势力从{donor_city.name}调遣{len(transfer_candidates)}名武将到{target_city.name}：{general_names}")
                     actions_remaining -= 1
                     
-                    # 如果捐赠城市兵力不足了，从列表中移除
-                    donor_total_army = sum(g.army for g in donor_city.generals)
-                    if donor_total_army <= 1000:
-                        donor_cities.remove(donor_city)
+                    # 更新捐赠城市兵力
+                    donor_army = sum(g.army for g in donor_city.generals)
+                    if donor_army <= 1000:
                         break
         
         return actions_remaining
@@ -3023,6 +3100,8 @@ if __name__ == "__main__":
     # 设置初始兵力
     for faction in [shu, wei, wu]:
         for general in faction.generals:
+            if general.faction == wei:
+                continue
             if general.martial >= 80:  # 武力高的武将初始兵力多
                 general.army = random.randint(800, 1000)
             else:
