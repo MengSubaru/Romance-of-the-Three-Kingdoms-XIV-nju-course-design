@@ -3100,8 +3100,6 @@ if __name__ == "__main__":
     # 设置初始兵力
     for faction in [shu, wei, wu]:
         for general in faction.generals:
-            if general.faction == wei:
-                continue
             if general.martial >= 80:  # 武力高的武将初始兵力多
                 general.army = random.randint(800, 1000)
             else:
