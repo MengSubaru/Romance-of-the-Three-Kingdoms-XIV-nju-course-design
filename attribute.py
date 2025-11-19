@@ -96,8 +96,8 @@ class City:
     max_progress: float = 500.0  # 最高5级（5×100）
 
     # 城市基础收入
-    base_commerce_income: int = 100  # 基础商业收入（金）
-    base_agriculture_income: int = 1000  # 基础农业收入（粮）
+    base_commerce_income: int = 200  # 基础商业收入（金）
+    base_agriculture_income: int = 1500  # 基础农业收入（粮）
 
     # 官员
     officer_commerce: Optional[General] = None
@@ -125,7 +125,7 @@ class City:
 
         # ---- 农业收入（粮草）----
         agriculture_level = int(self.agriculture_progress // self.progress_per_level)
-        food_income = self.base_agriculture_income + agriculture_level * 1000
+        food_income = self.base_agriculture_income + agriculture_level * 2500
         logs.append(f"农业开发 {agriculture_level}级 -> 收入 {food_income} 粮草")
         #print(f"农业开发 {agriculture_level}级 -> 收入 {food_income} 粮草")
 
@@ -175,14 +175,14 @@ class City:
 
         if self.officer_commerce and self.gold >= self.officer_commerce.monthly_salary(): # 存在商业官员并且资金够其开发商业
             self.gold -= self.officer_commerce.monthly_salary()
-            inc = self.officer_commerce.intellect / 10.0
+            inc = self.officer_commerce.intellect / 5.0
             self.commerce_progress = min(self.commerce_progress + inc, self.max_progress)
             #print(f"商业开发 +{inc:.1f}（总进度 {self.commerce_progress:.1f}/{self.max_progress}）")
             logs.append(f"商业开发 +{inc:.1f}（总进度 {self.commerce_progress:.1f}/{self.max_progress}）")
 
         if self.officer_agriculture and self.gold >= self.officer_agriculture.monthly_salary(): # 存在农业官员并且资金够其开发农业
             self.gold -= self.officer_agriculture.monthly_salary()
-            inc = self.officer_agriculture.politics / 10.0
+            inc = self.officer_agriculture.politics / 5.0
             self.agriculture_progress = min(self.agriculture_progress + inc, self.max_progress)
             #print(f"农业开发 +{inc:.1f}（总进度 {self.agriculture_progress:.1f}/{self.max_progress}）")
             logs.append(f"农业开发 +{inc:.1f}（总进度 {self.agriculture_progress:.1f}/{self.max_progress}）")
