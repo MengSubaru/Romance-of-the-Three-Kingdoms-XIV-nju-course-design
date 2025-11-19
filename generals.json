@@ -1,0 +1,85 @@
+{
+  "factions": {
+    "蜀": {
+      "ruler": {
+        "name": "刘备",
+        "leadership": 80,
+        "martial": 65,
+        "intellect": 75,
+        "politics": 80,
+        "loyalty": 0.5,
+        "greed": 0.2
+      },
+      "generals": [
+        {"name": "诸葛亮", "leadership": 90, "martial": 40, "intellect": 100, "politics": 95, "loyalty": 0.9, "greed": 0.1},
+        {"name": "关羽", "leadership": 96, "martial": 95, "intellect": 70, "politics": 60, "loyalty": 0.9, "greed": 0.3},
+        {"name": "张飞", "leadership": 88, "martial": 98, "intellect": 30, "politics": 40, "loyalty": 0.9, "greed": 0.4},
+        {"name": "赵云", "leadership": 97, "martial": 92, "intellect": 85, "politics": 65, "loyalty": 0.9, "greed": 0.2},
+        {"name": "马超", "leadership": 92, "martial": 94, "intellect": 50, "politics": 45, "loyalty": 0.8, "greed": 0.3},
+        {"name": "黄忠", "leadership": 89, "martial": 90, "intellect": 65, "politics": 60, "loyalty": 0.8, "greed": 0.2},
+        {"name": "魏延", "leadership": 85, "martial": 88, "intellect": 70, "politics": 55, "loyalty": 0.7, "greed": 0.5},
+        {"name": "姜维", "leadership": 88, "martial": 85, "intellect": 90, "politics": 75, "loyalty": 0.9, "greed": 0.2},
+        {"name": "庞统", "leadership": 75, "martial": 35, "intellect": 98, "politics": 85, "loyalty": 0.8, "greed": 0.3},
+        {"name": "法正", "leadership": 70, "martial": 45, "intellect": 92, "politics": 88, "loyalty": 0.8, "greed": 0.4}
+      ]
+    },
+    "魏": {
+      "ruler": {
+        "name": "曹操",
+        "leadership": 85,
+        "martial": 80,
+        "intellect": 80,
+        "politics": 85,
+        "loyalty": 0.6,
+        "greed": 0.3
+      },
+      "generals": [
+        {"name": "司马懿", "leadership": 95, "martial": 70, "intellect": 98, "politics": 90, "loyalty": 0.7, "greed": 0.6},
+        {"name": "夏侯惇", "leadership": 92, "martial": 85, "intellect": 60, "politics": 55, "loyalty": 0.85, "greed": 0.3},
+        {"name": "夏侯渊", "leadership": 89, "martial": 88, "intellect": 55, "politics": 50, "loyalty": 0.85, "greed": 0.4},
+        {"name": "张辽", "leadership": 94, "martial": 90, "intellect": 75, "politics": 65, "loyalty": 0.9, "greed": 0.2},
+        {"name": "徐晃", "leadership": 87, "martial": 86, "intellect": 65, "politics": 60, "loyalty": 0.85, "greed": 0.3},
+        {"name": "张郃", "leadership": 87, "martial": 90, "intellect": 70, "politics": 65, "loyalty": 0.85, "greed": 0.4},
+        {"name": "曹仁", "leadership": 90, "martial": 82, "intellect": 75, "politics": 70, "loyalty": 0.9, "greed": 0.3},
+        {"name": "许褚", "leadership": 82, "martial": 96, "intellect": 30, "politics": 35, "loyalty": 0.95, "greed": 0.2},
+        {"name": "典韦", "leadership": 80, "martial": 97, "intellect": 25, "politics": 30, "loyalty": 0.95, "greed": 0.1},
+        {"name": "郭嘉", "leadership": 75, "martial": 40, "intellect": 97, "politics": 80, "loyalty": 0.9, "greed": 0.4}
+      ]
+    },
+    "吴": {
+      "ruler": {
+        "name": "孙权",
+        "leadership": 78,
+        "martial": 70,
+        "intellect": 72,
+        "politics": 75,
+        "loyalty": 0.6,
+        "greed": 0.3
+      },
+      "generals": [
+        {"name": "周瑜", "leadership": 92, "martial": 75, "intellect": 96, "politics": 85, "loyalty": 0.9, "greed": 0.3},
+        {"name": "吕蒙", "leadership": 90, "martial": 88, "intellect": 80, "politics": 70, "loyalty": 0.9, "greed": 0.4},
+        {"name": "陆逊", "leadership": 85, "martial": 78, "intellect": 95, "politics": 85, "loyalty": 0.9, "greed": 0.4},
+        {"name": "甘宁", "leadership": 92, "martial": 90, "intellect": 60, "politics": 55, "loyalty": 0.85, "greed": 0.3},
+        {"name": "太史慈", "leadership": 89, "martial": 92, "intellect": 70, "politics": 60, "loyalty": 0.9, "greed": 0.2},
+        {"name": "黄盖", "leadership": 85, "martial": 84, "intellect": 65, "politics": 70, "loyalty": 0.9, "greed": 0.3},
+        {"name": "周泰", "leadership": 83, "martial": 89, "intellect": 55, "politics": 50, "loyalty": 0.95, "greed": 0.2},
+        {"name": "鲁肃", "leadership": 80, "martial": 60, "intellect": 90, "politics": 88, "loyalty": 0.9, "greed": 0.3},
+        {"name": "凌统", "leadership": 82, "martial": 86, "intellect": 65, "politics": 60, "loyalty": 0.85, "greed": 0.3},
+        {"name": "丁奉", "leadership": 80, "martial": 83, "intellect": 70, "politics": 65, "loyalty": 0.85, "greed": 0.4}
+      ]
+    }
+  },
+  "wild_generals": [
+    {"name": "华雄", "leadership": 82, "martial": 88, "intellect": 50, "politics": 45, "loyalty": 0.6, "greed": 0.5},
+    {"name": "颜良", "leadership": 84, "martial": 90, "intellect": 45, "politics": 40, "loyalty": 0.7, "greed": 0.4},
+    {"name": "文丑", "leadership": 83, "martial": 89, "intellect": 48, "politics": 42, "loyalty": 0.7, "greed": 0.4},
+    {"name": "高顺", "leadership": 86, "martial": 85, "intellect": 70, "politics": 60, "loyalty": 0.8, "greed": 0.3},
+    {"name": "张任", "leadership": 80, "martial": 82, "intellect": 75, "politics": 65, "loyalty": 0.8, "greed": 0.4},
+    {"name": "李严", "leadership": 75, "martial": 70, "intellect": 80, "politics": 75, "loyalty": 0.7, "greed": 0.5},
+    {"name": "廖化", "leadership": 72, "martial": 75, "intellect": 65, "politics": 60, "loyalty": 0.8, "greed": 0.3},
+    {"name": "王平", "leadership": 78, "martial": 76, "intellect": 70, "politics": 65, "loyalty": 0.8, "greed": 0.4},
+    {"name": "张绣", "leadership": 76, "martial": 80, "intellect": 65, "politics": 55, "loyalty": 0.6, "greed": 0.5},
+    {"name": "胡车儿", "leadership": 70, "martial": 82, "intellect": 40, "politics": 35, "loyalty": 0.7, "greed": 0.4}
+  ]
+}
